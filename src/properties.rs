@@ -261,7 +261,8 @@ impl Into<Property> for TodoStatus {
 
 
 // Fold a content line as described in RFC 5545, Section 3.1
-fn fold_line(line: String) -> String {
+fn fold_line<S: AsRef<str>>(line: S) -> String {
+    let line = line.as_ref();
     let limit = 75;
     let len = line.len();
     let mut ret = String::with_capacity(len + (len / limit * 3));
@@ -287,21 +288,16 @@ fn fold_line(line: String) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::string::String;
     use super::*;
 
     #[test]
-    fn fold_line_short() {
-        let line = String::from("This is a short line");
-        assert_eq!(line.clone(), fold_line(line));
-    }
-
-    #[test]
-    fn fold_line_folds_on_char_boundary() {
-        let line = String::from("Content lines shouldn't be folded in the middle \
-        of a UTF-8 character. 老虎.");
-        let expected = String::from("Content lines shouldn't be folded in the middle \
-        of a UTF-8 character. 老\r\n 虎.");
+    fn test_fold_line() {
+        let line = "This should be multiple lines and fold on char boundaries. 毎害\
+                   止加食下組多地将写館来局必第。東証細再記得玲祉込吉宣会法授";
+        let expected = "This should be multiple lines and fold on char boundaries. 毎害\
+                        止加食\r\n 下組多地将写館来局必第。東証細再記得玲祉込吉宣会法\r\n 授";
         assert_eq!(expected, fold_line(line));
+        assert_eq!("a", fold_line("a"));
     }
 }
+
